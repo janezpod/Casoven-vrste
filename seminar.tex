@@ -1,0 +1,168 @@
+\documentclass[11pt]{amsart}
+\usepackage{fullpage}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[slovene]{babel}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+
+\linespread{1.1}
+\setlength\parindent{6pt}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Corr}{\mathrm{Corr}}
+\newcommand{\WN}{\mathrm{WN}}
+\newcommand{\IID}{\mathrm{IID}}
+\newcommand{\AIC}{\mathrm{AIC}}
+\newcommand{\BIC}{\mathrm{BIC}}
+
+\theoremstyle{definition}
+\newtheorem{definicija}{Definicija}[section]
+\newtheorem{primer}[definicija]{Primer}
+\newtheorem{opomba}[definicija]{Opomba}
+
+\theoremstyle{plain}
+\newtheorem{izrek}[definicija]{Izrek}
+\newtheorem{trditev}[definicija]{Trditev}
+
+\title{Analiza klimatskih spremenljivk z modeli \texttt{SARIMA} \\
+\large{Pregled članka Dimri, Ahmad, Sharif (2020)}}
+\author{[Janez Podlogar]}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Potrebno predznanje}
+
+Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumevanje članka.
+
+\begin{definicija}
+    \emph{Časovna vrsta} je stohastični proces $\{X_t\}_{t \in T}$, kjer je $T$ 
+    indeksni množici, običajno $T = \Z$ ali $T = \N$.
+\end{definicija}
+
+\begin{definicija}
+    Časovna vrsta $\{X_t\}_{t \in \Z}$ je \emph{šibko stacionarna}, če
+    \begin{gather*}
+        \forall t \in \Z. \exists m \in \R \colon \E[X_t] = m, \\ 
+        \forall t \in \Z \colon \E[X_t^2] < \infty, \\
+        \forall s,t,h \in \Z \colon \Cov(X_t, X_s) = \Cov(X_{t+h}, X_{s+h}).
+    \end{gather*}
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{X_t\}_{t \in \Z}$ šibko stacionarna časovna vrsta. \emph{Avtokovariančna funkcija} je
+    \begin{align*}
+        \gamma_X \colon \Z &\to \R, \\
+        h &\mapsto \Cov(X_{t}, X_{t+h}).
+    \end{align*}
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{X_t\}_{t \in \Z}$ šibko stacionarna časovna vrsta. \emph{Avtokorelacijska funkcija}
+    je
+    \begin{align*}
+        \rho_X \colon \Z &\to [-1,1], \\
+        h &\mapsto \frac{\gamma_X(h)}{\gamma_X(0)}.
+    \end{align*}
+\end{definicija}
+
+
+\begin{definicija}
+    Šibko stacionarna časovna vrsta $\{X_t\}_{t \in \Z}$ je \emph{beli šum}, če
+    \begin{gather*}
+        \forall t \in \Z \colon \E[X_t] = 0, \\
+        \gamma_X(h) = 
+            \begin{cases}
+                \sigma^2 &; h = 0, \\
+                0 &; h \neq 0.
+            \end{cases}
+    \end{gather*}
+    Beli šum je nekorelirano zaporedje z končno konstantno varianco in ničelno pričakovano vrednostjo.
+    Označimo ga z $\WN(0, \sigma^2)$.
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{Z_t\}_{t \in \Z} \sim \WN(0,\sigma^2)$ in $\theta_1, \ldots, \theta_q \in \R$.
+    Časovna vrsta $\{X_t\}_{t \in \Z}$, podana z
+    \[
+        X_t = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
+    \]
+    je \emph{proces drsečega povprečja reda $q$}. Označimo ga z $\mathrm{MA}(q)$.
+\end{definicija}
+
+\begin{izrek}
+    Proces $\mathrm{MA}(q)$ je šibko stacionaren.
+\end{izrek}
+
+\begin{proof}
+    Ker je $\{Z_t\} \sim \WN(0, \sigma^2)$, za vsak $t \in \Z$ velja
+    \[
+        \E[X_t] = \E[Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q}] 
+        = \sum_{j=0}^{q} \theta_j \E[Z_{t-j}] = 0,
+    \]
+    kjer označimo $\theta_0 = 1$.
+
+    Za $h \geq 0$ in poljuben $t \in \Z$ velja
+    \[
+        \gamma_X(h) = \Cov(X_{t+h}, X_t) = \E[X_{t+h} X_t] 
+        = \E\left[ \left(\sum_{i=0}^{q} \theta_i Z_{t+h-i}\right)
+        \left(\sum_{j=0}^{q} \theta_j Z_{t-j}\right) \right].
+    \]
+    Zaradi linearnostjo pričakovane vrednosti dobimo
+    \[
+        \gamma_X(h) = \sum_{i=0}^{q} \sum_{j=0}^{q} \theta_i \theta_j \E[Z_{t+h-i} Z_{t-j}]
+    \]
+    in iz nekoleriranosti $\{Z_t\}$ sledi
+    \[
+        \E[Z_{t+h-i} Z_{t-j}] = 
+            \begin{cases}
+                \sigma^2 &; t+h-i = t-j,  \\
+                0 &; \text{sicer}.
+            \end{cases}
+    \]
+    Vsi čeni razen tist z $j = i - h$ so ničelni. Ker $0 \leq j \leq q$, velja
+    mora veljati tudi $ h \leq i \leq g + h$. Za $0 \leq h \leq q$ dobimo
+    \[
+        \gamma_X(h) = \sum_{i=h}^{q} \theta_i \theta_{i-h} \sigma^2
+                   = \sigma^2 \sum_{j=0}^{q-h} \theta_{j+h} \theta_j.
+    \]
+    Funkcijo $\gamma_X$ za $h < 0$ definiramo z $\gamma_X(h) = \gamma_X(-h)$, saj je
+    avtokovariančna funkcija simetrična. Skupaj torej velja
+    \[
+        \gamma_X(h) = 
+        \begin{cases}
+            \sigma^2 \sum_{j=0}^{q-|h|} \theta_j \theta_{j+|h|} &; |h| \leq q, \\
+            0 &; |h| > q.
+        \end{cases}
+    \]
+    Ker je $\gamma_X(h)$ je odvisna le od $h$, ne pa od $t$, zato je proces šibko stacionaren.
+\end{proof}
+
+\begin{definicija}
+    Naj bo $\{Z_t\}_{t \in \Z} \sim \WN(0,\sigma^2)$ in $\varphi_1, \ldots, \varphi_p \in \R$.
+    Šibko stacionarna časovna vrsta $\{X_t\}_{t \in \Z}$, ki zadošča
+    \[
+        X_t = \varphi_1 X_{t-1} + \cdots + \varphi_p X_{t-p} + Z_t,
+    \]
+    je \emph{avtoregresijski proces reda $p$}. Označimo ga z $\mathrm{AR}(p)$.
+\end{definicija}
+
+\begin{thebibliography}{9}
+    \bibitem{basrak} B.~Basrak, \emph{Essentials of Time Series with examples in R},
+    Department of Mathematics, University of Zagreb.
+\end{thebibliography}
+d
+\end{document}
