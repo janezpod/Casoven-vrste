@@ -3,11 +3,15 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
 \usepackage[slovene]{babel}
 \usepackage{hyperref}
 \usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{dsfont}
 
-\linespread{1.1}
+
+\linespread{1.2}
 \setlength\parindent{6pt}
 
 \newcommand{\N}{\mathbb{N}}
@@ -21,6 +25,7 @@
 \newcommand{\IID}{\mathrm{IID}}
 \newcommand{\AIC}{\mathrm{AIC}}
 \newcommand{\BIC}{\mathrm{BIC}}
+\providecommand{\abs}[1]{\left\lvert #1 \right\rvert}
 
 \theoremstyle{definition}
 \newtheorem{definicija}{Definicija}[section]
@@ -31,9 +36,9 @@
 \newtheorem{izrek}[definicija]{Izrek}
 \newtheorem{trditev}[definicija]{Trditev}
 
-\title{Analiza klimatskih spremenljivk z modeli \texttt{SARIMA} \\
-\large{Pregled članka Dimri, Ahmad, Sharif (2020)}}
-\author{[Janez Podlogar]}
+\title{Analiza klimatskih spremenljivk z modeli SARIMA \\
+\large{Pregled \v{c}lanka Dimri, Ahmad, Sharif (2020)}}
+\author{Janez Podlogar}
 \date{\today}
 
 \begin{document}
@@ -159,6 +164,136 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
     \]
     je \emph{avtoregresijski proces reda $p$}. Označimo ga z $\mathrm{AR}(p)$.
 \end{definicija}
+
+\begin{definicija}
+    Na prostoru $\R^{\Z}$ definiramo \emph{operator zamika nazaj} $B$ z relacijo
+    \[
+        BX_t = (B(X))_t = X_{t-1},
+    \]
+    Z $\mathds{1}$ označimo identični operator. Rekurzivno definiramo $B^0 = \mathds{1}$ ter
+    $B^j X_t = B(B^{j-1} X_t) = X_{t-j}$ za $j \geq 1$. Operator $B$ ima inverz, saj lahko 
+    pišemo $B^{-j} X_t = X_{t+j}$ za $j > 0$.
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{\psi_k\}_{k \in \Z}$ zaporedje realnih števil in $\{X_t\}_{t \in \Z}$ časovna 
+    vrsta. Če zaporedje $\{Y_t\}_{t \in \Z}$ za vsak $t \in \Z$ zadošča
+    \[
+        Y_t = \sum_{k = -\infty}^{\infty} \psi_k X_{t-k},
+    \]
+    pravimo, da je $\{Y_t\}$ dobljeno z uporabo \emph{linearnega filtra}
+    \[
+        \Psi = \Psi(B) = \sum_{k = -\infty}^{\infty} \psi_k B^k
+    \]
+    na proces $\{X_t\}$. Filter $\Psi(B)$ identificiramo z zaporedjem $\{\psi_k\}_{k \in \Z}$.
+\end{definicija}
+
+\begin{definicija}
+    Linearni filter $\Psi(B) = \sum_{k \in \Z} \psi_k B^k$ je \emph{kavzalen}, če $\psi_k = 0$ 
+    za vsak $k < 0$.
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{Z_t\}_{t \in \Z} \sim \WN(0, \sigma^2)$. Časovno vrsto $\{X_t\}_{t \in \Z}$, 
+    ki za vsak $t \in \Z$ zadošča
+    \[
+        X_t = \sum_{i = -\infty}^{\infty} \psi_i Z_{t-i},
+    \]
+    za neko zaporedje $\{\psi_i\}_{i \in \Z}$ s 
+    \[
+        \sum_{i=-\infty}^{\infty} \abs{\psi_i} < \infty,
+    \] 
+    imenujemo \emph{linearni proces}.
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{X_t\}_{t \in \Z}$ proces $\mathrm{AR}(p)$ s parametri $\varphi_1, \ldots, \varphi_p \in \R$.
+    Pripadajoči \emph{avtoregresijski polinom} je
+    \[
+        \varphi(z) = 1 - \varphi_1 z - \cdots - \varphi_p z^p, \quad z \in \mathbb{C}.
+    \]
+    Z uporabo operatorja zamika nazaj $B$ proces zapišemo kompaktno kot
+    \[
+        \varphi(B) X_t = Z_t,
+    \]
+    kjer je $\varphi(B) = \mathbf{1} - \varphi_1 B - \cdots - \varphi_p B^p$ linearni filter, 
+    ki ga dobimo s formalno vstavitvijo $z = B$ v polinom $\varphi$.
+\end{definicija}
+
+\begin{izrek}
+    Naj bo $\varphi$ avtoregresijski polinom procesa $\mathrm{AR}(p)$. Velja:
+    \begin{itemize}
+        \item Šibko stacionarna rešitev rekurzije $\varphi(B) X_t = Z_t$ obstaja natanko tedaj, 
+              ko za vsak $z \in \mathbb{C}$, $\abs{z} = 1$ velja $\varphi(z) \neq 0$.
+        \item Rešitev je kavzalen linearni proces glede na $\{Z_t\}$ natanko tedaj, ko za 
+              vsak $z \in \mathbb{C}$, $\abs{z} \leq 1$ velja $\varphi(z) \neq 0$.
+    \end{itemize}
+    Pri $p = 1$ je prvi pogoj $\varphi_1 \neq \pm 1$, drugi pa $\abs{\varphi_1} < 1$.
+\end{izrek}
+
+\begin{primer}
+    Proces $\mathrm{AR}(1)$ je
+    \[
+        X_t = \varphi X_{t-1} + Z_t, \quad t \in \Z,
+    \]
+    kjer je $\{Z_t\} \sim \WN(0, \sigma^2)$ in $\varphi \in \R$. Pripadajoči avtoregresijski 
+    polinom je
+    \[
+        \varphi(z) = 1 - \varphi z,
+    \]
+    ki ima edino ničlo $z_0 = 1/\varphi$. Ločimo tri primere:
+
+    \emph{Primer 1: $\abs{\varphi} < 1$.} Tedaj je $\abs{z_0} > 1$, polinom $\varphi$ nima ničel 
+    na zaprtem enotnem disku, zato po izreku obstaja kavzalna rešitev. Eksplicitno jo dobimo 
+    z iteracijo rekurzije:
+    \[
+        X_t = \varphi X_{t-1} + Z_t = \varphi(\varphi X_{t-2} + Z_{t-1}) + Z_t = \cdots 
+            = \sum_{j=0}^{\infty} \varphi^j Z_{t-j}.
+    \]
+    Vrsta konvergira absolutno, saj $\sum_{j=0}^{\infty} \abs{\varphi}^j = 1/(1 - \abs{\varphi}) < \infty$. 
+    Koeficienti filtra so $\psi_j = \varphi^j$ za $j \geq 0$ in $\psi_j = 0$ za $j < 0$, kar 
+    potrjuje kavzalnost.
+
+    \emph{Primer 2: $\abs{\varphi} > 1$.} Tedaj je $\abs{z_0} < 1$, polinom $\varphi$ ima ničlo 
+    znotraj enotnega diska, vendar ne na enotni krožnici. Šibko stacionarna rešitev obstaja, 
+    a ni več kavzalna. Dobimo jo z iteracijo \emph{naprej}. Iz $X_{t-1} = (X_t - Z_t)/\varphi$ 
+    izpeljemo
+    \[
+        X_t = -\sum_{j=1}^{\infty} \varphi^{-j} Z_{t+j}.
+    \]
+    Tu je $X_t$ odvisen od \emph{prihodnjih} vrednosti belega šuma, kar v praksi ni uporabno.
+
+    \emph{Primer 3: $\varphi = \pm 1$.} Tedaj ima $\varphi$ ničlo na enotni krožnici 
+    ($z_0 = \pm 1$), zato šibko stacionarna rešitev ne obstaja. Pri $\varphi = 1$ 
+    dobimo slučajni sprehod $X_t = X_{t-1} + Z_t$, katerega varianca raste linearno s časom.
+\end{primer}
+
+\begin{opomba}
+    V naših definicijah procesov $\mathrm{MA}(q)$ in $\mathrm{AR}(p)$ ne dodajamo
+    konstantnega člena $c$, kakor to počnejo nekateri avtorji. Pristopa sta ekvivalentna, saj
+    če $\{Y_t\}$ zadošča
+    \[
+        Y_t = c + \varphi_1 Y_{t-1} + \cdots + \varphi_p Y_{t-p} + Z_t,
+    \]
+    z upoštevanjem pričakovane vrednosti na obeh straneh dobimo
+    \[
+        \E[Y_t] = c + \varphi_1 \E[Y_{t-1}] + \cdots + \varphi_p \E[Y_{t-p}] + \E[Z_t].
+    \]
+    Iz $\E[Z_t] = 0$ in šibke stacionarnosti, ki da $\E[Y_t] = \E[Y_{t-1}] = \cdots = \E[Y_{t-p}] =: \mu$, sledi
+    \begin{gather*}
+        \mu = c + (\varphi_1 + \cdots + \varphi_p) \mu, 
+        \mu \cdot (1 - \varphi_1 - \cdots - \varphi_p) = c.
+    \end{gather*}
+    Ker je $\varphi(z) = 1 - \varphi_1 z - \cdots - \varphi_p z^p$ avtoregresijski polinom, je 
+    $\varphi(1) = 1 - \varphi_1 - \cdots - \varphi_p$, zato
+    \[
+        \E[Y_t] = \frac{c}{\varphi(1)}.
+    \]
+    Po izreku o obstoju kavzalne rešitve velja $\varphi(z) \neq 0$ za $\abs{z} \leq 1$, posebej 
+    $\varphi(1) \neq 0$, zato je deljenje smiselno. S centriranjem $X_t = Y_t - \E[Y_t]$ 
+    dobimo enakovreden proces brez konstante. Konvencija, da delamo s centriranimi vrstami, 
+    poenostavi računanje avtokovariančne funkcije.
+\end{opomba}
 
 \begin{thebibliography}{9}
     \bibitem{basrak} B.~Basrak, \emph{Essentials of Time Series with examples in R},
