@@ -188,7 +188,15 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
         \item Rešitev je kavzalen linearni proces glede na $\{Z_t\}$ natanko tedaj, ko za 
               vsak $z \in \mathbb{C}$, $\abs{z} \leq 1$ velja $\varphi(z) \neq 0$.
     \end{itemize}
-    Pri $p = 1$ je prvi pogoj $\varphi_1 \neq \pm 1$, drugi pa $\abs{\varphi_1} < 1$.
+    V primeru kavzalnosti je rešitev oblike
+    \[
+        X_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j},
+    \]
+    kjer so koeficienti $\psi_j$ določeni z razvojem racionalne funkcije
+    \[
+        \psi(z) = \frac{1}{\varphi(z)} = \sum_{j=0}^{\infty} \psi_j z^j
+    \]
+    v okolici $z = 0$.
 \end{izrek}
 
 \begin{primer}
@@ -201,22 +209,33 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
     \[
         \varphi(z) = 1 - \varphi z,
     \]
-    ki ima edino ničlo $z_0 = 1/\varphi$. Ločimo tri primere:
+    ki ima edino ničlo $z_0 = \frac{1}{\varphi}$. Ločimo tri primere:
 
     \emph{Primer 1: $\abs{\varphi} < 1$.} Tedaj je $\abs{z_0} > 1$, polinom $\varphi$ nima ničel 
-    na zaprtem enotnem disku, zato po izreku obstaja kavzalna rešitev. Eksplicitno jo dobimo 
-    z iteracijo rekurzije:
+    na zaprtem enotnem disku, zato po izreku obstaja kavzalna rešitev. Po izreku jo dobimo 
+    z razvojem racionalne funkcije $\psi(z) = \frac{1}{\varphi(z)}$ v Taylorjevo vrsto okoli $z = 0$. 
+    Za geometrijsko vrsto velja
+    \[
+        \psi(z) = \frac{1}{1 - \varphi z} = \sum_{j=0}^{\infty} (\varphi z)^j 
+                = \sum_{j=0}^{\infty} \varphi^j z^j.
+    \]
+    Koeficienti so $\psi_j = \varphi^j$ za $j \geq 0$, zato je
+    \[
+        X_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j} = \sum_{j=0}^{\infty} \varphi^j Z_{t-j}.
+    \]
+    
+    Do enakega rezultat pridemo tudi z neposredno iteracijo rekurzije
     \[
         X_t = \varphi X_{t-1} + Z_t = \varphi(\varphi X_{t-2} + Z_{t-1}) + Z_t = \cdots 
             = \sum_{j=0}^{\infty} \varphi^j Z_{t-j}.
     \]
-    Vrsta konvergira absolutno, saj $\sum_{j=0}^{\infty} \abs{\varphi}^j = 1/(1 - \abs{\varphi}) < \infty$. 
-    Koeficienti filtra so $\psi_j = \varphi^j$ za $j \geq 0$ in $\psi_j = 0$ za $j < 0$, kar 
-    potrjuje kavzalnost.
+    Vrsta konvergira absolutno v $L^2$, saj 
+    $\sum_{j=0}^{\infty} \abs{\varphi}^j = \frac{1}{1 - \abs{\varphi}} < \infty$. Koeficienti filtra 
+    so $\psi_j = \varphi^j$ za $j \geq 0$ in $\psi_j = 0$ za $j < 0$, kar potrjuje kavzalnost.
 
     \emph{Primer 2: $\abs{\varphi} > 1$.} Tedaj je $\abs{z_0} < 1$, polinom $\varphi$ ima ničlo 
     znotraj enotnega diska, vendar ne na enotni krožnici. Šibko stacionarna rešitev obstaja, 
-    a ni več kavzalna. Dobimo jo z iteracijo \emph{naprej}. Iz $X_{t-1} = (X_t - Z_t)/\varphi$ 
+    a ni več kavzalna. Dobimo jo z iteracijo \emph{naprej}. Iz $X_{t-1} = {\frac(X_t - Z_t)}{\varphi}$ 
     izpeljemo
     \[
         X_t = -\sum_{j=1}^{\infty} \varphi^{-j} Z_{t+j}.
@@ -254,6 +273,103 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
     dobimo enakovreden proces brez konstante. Konvencija, da delamo s centriranimi vrstami, 
     poenostavi računanje avtokovariančne funkcije.
 \end{opomba}
+
+
+\subsection*{Avtoregresijski proces drsečega povprečja}
+
+\begin{definicija}
+    Naj bo $\{Z_t\}_{t \in \Z} \sim \WN(0, \sigma^2)$ ter $\varphi_1, \ldots, \varphi_p \in \R$ 
+    in $\theta_1, \ldots, \theta_q \in \R$. Šibko stacionarna časovna vrsta $\{X_t\}_{t \in \Z}$, 
+    ki za vsak $t \in \Z$ zadošča
+    \[
+        X_t - \varphi_1 X_{t-1} - \cdots - \varphi_p X_{t-p} 
+        = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
+    \]
+    je \emph{avtoregresijski proces drsečega povprečja reda $(p,q)$}. Označimo ga z 
+    $\mathrm{ARMA}(p,q)$.
+\end{definicija}
+
+\begin{definicija}
+    Naj bo $\{X_t\}_{t \in \Z}$ proces $\mathrm{ARMA}(p,q)$. Pripadajoči polinomi so
+    \begin{align*}
+        \varphi(z) &= 1 - \varphi_1 z - \cdots - \varphi_p z^p, \\
+        \theta(z)  &= 1 + \theta_1 z + \cdots + \theta_q z^q,
+    \end{align*}
+    kjer je $z \in \mathbb{C}$. Z uporabo operatorja zamika nazaj $B$ proces zapišemo kompaktno kot
+    \[
+        \varphi(B) X_t = \theta(B) Z_t,
+    \]
+    kjer sta $\varphi(B)$ in $\theta(B)$ linearna filtra, ki ju dobimo s $z = B$.
+\end{definicija}
+
+\begin{opomba}
+    Procesa $\mathrm{MA}(q)$ in $\mathrm{AR}(p)$ sta posebna primera procesa $\mathrm{ARMA}(p,q)$:
+    \begin{itemize}
+        \item $\mathrm{MA}(q) = \mathrm{ARMA}(0, q)$,
+        \item $\mathrm{AR}(p) = \mathrm{ARMA}(p, 0)$.
+    \end{itemize}
+\end{opomba}
+
+\begin{izrek}
+    Naj bosta $\varphi$ in $\theta$ pripadajoča polinoma procesa $\mathrm{ARMA}(p,q)$ brez 
+    skupnih ničel. Velja:
+    \begin{itemize}
+        \item Šibko stacionarna rešitev rekurzije $\varphi(B) X_t = \theta(B) Z_t$ obstaja 
+              natanko tedaj, ko za vsak $z \in \mathbb{C}$, $\abs{z} = 1$ velja $\varphi(z) \neq 0$.
+        \item Rešitev je kavzalen linearni proces glede na $\{Z_t\}$ natanko tedaj, ko za 
+              vsak $z \in \mathbb{C}$, $\abs{z} \leq 1$ velja $\varphi(z) \neq 0$.
+    \end{itemize}
+    V primeru kavzalnosti je rešitev oblike
+    \[
+        X_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j},
+    \]
+    kjer so koeficienti $\psi_j$ določeni z razvojem racionalne funkcije
+    \[
+        \psi(z) = \frac{\theta(z)}{\varphi(z)} = \sum_{j=0}^{\infty} \psi_j z^j
+    \]
+    v okolici $z = 0$.
+\end{izrek}
+
+\begin{primer}
+    Proces $\mathrm{ARMA}(1,1)$ z $\abs{\varphi} < 1$ je
+    \[
+        X_t = \varphi X_{t-1} + Z_t + \theta Z_{t-1}, \quad t \in \Z.
+    \]
+    Pripadajoča polinoma sta $\varphi(z) = 1 - \varphi z$ in $\theta(z) = 1 + \theta z$. Polinom 
+    $\varphi$ ima ničlo $z_0 = \frac{1}{\varphi}$, torej je $\abs{z_0} > 1$, zato je rešitev kavzalna.
+    
+    Po izreku koeficiente $\psi_j$ dobimo z razvojem racionalne funkcije 
+    $\psi(z) = \frac{\theta(z)}{\varphi(z)}$ v Taylorjevo vrsto okoli $z = 0$. Najprej z geometrijsko 
+    vrsto razvijemo imenovalec:
+    \[
+        \frac{1}{1 - \varphi z} = \sum_{j=0}^{\infty} \varphi^j z^j.
+    \]
+    Zatem pomnožimo s števcem:
+    \[
+        \psi(z) = \frac{1 + \theta z}{1 - \varphi z} 
+                = (1 + \theta z) \sum_{j=0}^{\infty} \varphi^j z^j
+                = \sum_{j=0}^{\infty} \varphi^j z^j + \theta \sum_{j=0}^{\infty} \varphi^j z^{j+1}.
+    \]
+    V drugi vsoti uvedemo zamik indeksa $k = j + 1$:
+    \[
+        \theta \sum_{j=0}^{\infty} \varphi^j z^{j+1} = \theta \sum_{k=1}^{\infty} \varphi^{k-1} z^k.
+    \]
+    Vsoti združimo. Pri $z^0$ ostane le člen iz prve vsote, $\psi_0 = 1$. Za $k \geq 1$ dobimo 
+    iz prve vsote $\varphi^k$ in iz druge $\theta \varphi^{k-1}$, skupaj
+    \[
+        \psi_k = \varphi^k + \theta \varphi^{k-1} = \varphi^{k-1}(\varphi + \theta).
+    \]
+    Tako je razvoj
+    \[
+        \psi(z) = 1 + \sum_{j=1}^{\infty} \varphi^{j-1}(\varphi + \theta) z^j,
+    \]
+    ki da $\psi_0 = 1$ in $\psi_j = \varphi^{j-1}(\varphi + \theta)$ za $j \geq 1$. 
+    Eksplicitna predstavitev je
+    \[
+        X_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j} 
+            = Z_t + (\varphi + \theta) \sum_{j=1}^{\infty} \varphi^{j-1} Z_{t-j}.
+    \]
+\end{primer}
 
 \newpage
 
