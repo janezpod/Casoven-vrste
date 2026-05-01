@@ -244,7 +244,15 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
 
     \emph{Primer 3: $\varphi = \pm 1$.} Tedaj ima $\varphi$ ničlo na enotni krožnici 
     ($z_0 = \pm 1$), zato šibko stacionarna rešitev ne obstaja. Pri $\varphi = 1$ 
-    dobimo slučajni sprehod $X_t = X_{t-1} + Z_t$, katerega varianca raste linearno s časom.
+    dobimo slučajni sprehod $X_t = X_{t-1} + Z_t$, katerega varianca raste linearno s časom,
+    saj iteracija iz izhodišča $X_0$ da
+    \[
+        X_t = X_0 + Z_1 + Z_2 + \cdots + Z_t,
+    \]
+    in iz nekoreliranosti $\{Z_t\}$ sledi
+    \[
+        \Var(X_t) = \sum_{i=1}^{t} \Var(Z_i) = t \sigma^2.
+    \]
 \end{primer}
 
 \begin{opomba}
@@ -371,6 +379,334 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
     \]
 \end{primer}
 
+\subsection*{Integrirani avtoregresijski proces drsečega povprečja}
+
+V praksi so časovne vrste pogosto nestacionarne, vsebujejo trend ali drugo počasno 
+spreminjajočo se komponento. Klasičen pristop je, da nestacionarno vrsto pred analizo z modeli 
+$\mathrm{ARMA}$ \emph{diferenciramo}, dokler ne postane stacionarna. To motivira definicijo 
+procesov $\mathrm{ARIMA}$.
+
+\begin{definicija}
+    \emph{Operator diferenciranja} $\nabla$ definiramo kot
+    \[
+        \nabla = \mathds{1} - B,
+    \]
+    torej $\nabla X_t = X_t - X_{t-1}$ za vsak $t \in \Z$. Rekurzivno definiramo $\nabla^0 = \mathds{1}$ 
+    in $\nabla^d X_t = \nabla(\nabla^{d-1} X_t)$ za $d \geq 1$.
+\end{definicija}
+
+\begin{primer}
+    Operator $\nabla$ je diskretni analog odvoda. Tako kot odvod zniža stopnjo polinoma za ena, 
+    tudi diferenciranje časovne vrste s polinomskim trendom zniža stopnjo trenda za ena.
+
+    Naj bo 
+    \[
+    X_t = a_0 + a_1 t + Y_t,
+    \] kjer je $\{Y_t\}$ šibko stacionarna časovna vrsta in 
+    $a_0, a_1 \in \R$. Tedaj
+    \[
+        \nabla X_t = X_t - X_{t-1} 
+                   = (a_0 + a_1 t + Y_t) - (a_0 + a_1 (t-1) + Y_{t-1}) 
+                   = a_1 + \nabla Y_t.
+    \]
+    Linearni trend je tako odstranjen, ostal je le konstantni odsek $a_1$ (ki ne kvari 
+    stacionarnosti) in razlika $\nabla Y_t$ stacionarnega procesa.
+    
+    Splošneje, če je $X_t = m_t + Y_t$ s polinomskim trendom $m_t = a_0 + a_1 t + \cdots + a_k t^k$ 
+    stopnje $k$, je $\nabla^d X_t$ stacionaren za vsak $d \geq k$. Operator $\nabla$ je torej 
+    orodje za odstranjevanje polinomskih trendov, koliko diferenciranj potrebujemo, pa določa 
+    stopnja trenda.
+\end{primer}
+
+\begin{definicija}
+    Naj bo $d \in \N_0$. Časovna vrsta $\{X_t\}_{t \in \Z}$ je \emph{integrirani avtoregresijski 
+    proces drsečega povprečja reda $(p,d,q)$}, če je $d$-krat diferencirana vrsta 
+    $\{\nabla^d X_t\}_{t \in \Z}$, kjer je
+    \[
+        \nabla^d X_t = (\mathds{1} - B)^d X_t,
+    \]
+    kavzalen proces $\mathrm{ARMA}(p,q)$. Označimo ga z $\mathrm{ARIMA}(p,d,q)$.
+\end{definicija}
+
+\begin{izrek}
+    Naj bo $\{X_t\}_{t \in \Z}$ proces $\mathrm{ARIMA}(p,d,q)$ s pripadajočima polinomoma 
+    $\varphi$ in $\theta$. Tedaj $\{X_t\}$ zadošča rekurziji
+    \[
+        \varphi(B)\,(\mathds{1} - B)^d X_t = \theta(B) Z_t.
+    \]
+    Za $d \geq 1$ proces $\{X_t\}$ ni šibko stacionaren, postane pa po $d$-kratnem diferenciranju.
+\end{izrek}
+
+\begin{opomba}
+    Prvi del sledi iz definicije: če je $\{Y_t\} = \{\nabla^d X_t\}$ proces 
+    $\mathrm{ARMA}(p,q)$, velja $\varphi(B) Y_t = \theta(B) Z_t$, vstavitev 
+    $Y_t = (\mathds{1}-B)^d X_t$ da željeno enačbo.
+
+    Drugi del sledi iz izreka o obstoju rešitev procesa $\mathrm{ARMA}$, ki pravi, da 
+    šibko stacionarna rešitev rekurzije obstaja natanko tedaj, ko avtoregresijski polinom 
+    nima ničel na enotni krožnici. Pri ARIMA je razširjeni polinom $\varphi(z)(1-z)^d$, 
+    ki ima za $d \geq 1$ ničlo pri $z = 1$. Šibko stacionarna rešitev rekurzije zato ne obstaja, 
+    kar pomeni, da $\{X_t\}$ ni šibko stacionaren.
+
+    Šibko stacionaren postane šele po $d$-kratnem diferenciranju, saj je po definiciji 
+    $\{\nabla^d X_t\}$ kavzalen proces $\mathrm{ARMA}(p,q)$ in s tem šibko stacionaren.
+\end{opomba}
+
+\begin{primer}
+    Proces $\mathrm{ARIMA}(0,1,0)$ je določen s pogojem, da je $\nabla X_t = Z_t$, torej za
+    vsak $t \in \Z$
+    \[
+        X_t = X_{t-1} + Z_t.
+    \]
+    To je \emph{slučajni sprehod}, ki smo ga že srečali pri primeru procesa $\mathrm{AR}(1)$ 
+    z $\varphi = 1$. Slučajni sprehod ima nestacionarno varianco, ki raste linearno s časom.
+    Po enkratnem diferenciranju pa
+    \[
+        \nabla X_t = X_t - X_{t-1} = (X_{t-1} + Z_t) - X_{t-1} = Z_t,
+    \]
+    kar je beli šum $\WN(0, \sigma^2)$, ki je šibko stacionaren.
+\end{primer}
+
+\begin{primer}
+    Proces $\mathrm{ARIMA}(0,1,1)$ je določen s pogojem, da je
+    $\nabla X_t = Z_t + \theta Z_{t-1}$, torej za vsak $t \in \Z$
+    \[
+        X_t = X_{t-1} + Z_t + \theta Z_{t-1}.
+    \]
+    Ta proces je v članku~\cite{dimri2020} osnovni gradnik modela za padavine.
+\end{primer}
+
+\section{Doprinos članka}
+
+Nadgradimo model $\mathrm{ARIMA}$ v sezonsko različico  $\mathrm{SARIMA}$,
+predstavimo Box--Jenkinsovo metodologijo za izbiro in oceno modela, 
+ter pokažemo, kako se model uporabi na realnih klimatskih podatkih.
+
+\subsection*{Sezonski operator diferenciranja}
+
+Mesečni klimatski podatki imajo izrazit letni cikel: julij je vsako leto vroč, januar 
+vsako leto hladen. Ta letni cikel je deterministična periodična komponenta, ki je z 
+navadnim diferenciranjem $\nabla$ ne moremo odstraniti. Potrebujemo \emph{sezonsko} 
+diferenciranje.
+
+\begin{definicija}
+    Naj bo $m \in \N$. \emph{Sezonski operator diferenciranja} reda $m$ je
+    \[
+        \nabla_m = \mathds{1} - B^m,
+    \]
+    torej $\nabla_m X_t = X_t - X_{t-m}$ za vsak $t \in \Z$. Rekurzivno definiramo 
+    $\nabla_m^0 = \mathds{1}$ in $\nabla_m^D X_t = \nabla_m(\nabla_m^{D-1} X_t)$ za 
+    $D \in Z$, $D \geq 1$.
+\end{definicija}
+
+\begin{primer}
+    Naj bo $\{s_t\}$ deterministična periodična komponenta s periodo $m$, torej $s_t = s_{t-m}$ 
+    za vsak $t \in \Z$. Tedaj
+    \[
+        \nabla_m s_t = s_t - s_{t-m} = 0,
+    \]
+    torej sezonsko diferenciranje popolnoma odstrani periodično komponento. Pri mesečnih 
+    podatkih s periodo $m = 12$ je to letni cikel.
+\end{primer}
+
+\begin{opomba}
+    Operatorja $\nabla$ in $\nabla_m$ se uporabljata skupaj, ne kot alternativi. Operator 
+    $\nabla$ odstrani polinomski trend (npr.\ dolgoročno segrevanje), $\nabla_m$ pa sezonsko 
+    komponento. Tipičen postopek pri mesečnih klimatskih podatkih je: najprej $\nabla_{12}$ za 
+    odstranitev letnega cikla, nato po potrebi še $\nabla$ za odstranitev preostalega trenda.
+    Operatorja sta povratljiva (komutirata) in pri sestavi velja $\nabla \nabla_m = \nabla_m \nabla$.
+\end{opomba}
+
+\subsection*{Sezonski avtoregresijski integrirani proces drsečega povprečja}
+
+Model $\mathrm{ARIMA}$ obravnava trend, ne pa sezonskosti. Razširitev, ki obravnava obe 
+hkrati, je $\mathrm{SARIMA}$. Ideja je. da poleg navadnih $\mathrm{ARMA}$ členov, 
+ki delujejo na zaporednih zamikih, dodamo \emph{sezonske} $\mathrm{ARMA}$ člene, ki 
+delujejo na zamikih dolžine $m$.
+
+\begin{definicija}
+    Naj bodo $p, d, q, P, D, Q \in \N_0$ in $m \in \N$, $m \geq 2$. Časovna vrsta 
+    $\{X_t\}_{t \in \Z}$ je \emph{sezonski integrirani avtoregresijski proces drsečega 
+    povprečja reda $(p,d,q)(P,D,Q)_m$}, če zadošča rekurziji
+    \[
+        \varphi(B)\,\Phi(B^m)\,\nabla^d\,\nabla_m^D X_t = \theta(B)\,\Theta(B^m)\,Z_t,
+    \]
+    kjer so $\{Z_t\} \sim \WN(0, \sigma^2)$ in
+    \begin{align*}
+        \varphi(z) &= 1 - \varphi_1 z - \cdots - \varphi_p z^p, 
+        & \theta(z) &= 1 + \theta_1 z + \cdots + \theta_q z^q, \\
+        \Phi(z)    &= 1 - \Phi_1 z - \cdots - \Phi_P z^P,
+        & \Theta(z) &= 1 + \Theta_1 z + \cdots + \Theta_Q z^Q,
+    \end{align*}
+    avtoregresijski in drsečesredinski polinomi. Označimo ga z 
+    $\mathrm{SARIMA}(p,d,q)(P,D,Q)_m$.
+\end{definicija}
+
+\begin{opomba}
+    Model SARIMA združuje vse mehanizme, ki smo jih spoznali. Polinoma $\varphi$ in $\theta$ 
+    delujeta na \emph{kratkoročnih zamikih} $1, 2, \ldots, p$ oz.\ $1, 2, \ldots, q$, 
+    medtem ko polinoma $\Phi$ in $\Theta$ delujeta na \emph{sezonskih zamikih} 
+    $m, 2m, \ldots, Pm$ oz.\ $m, 2m, \ldots, Qm$. Operator $\nabla^d$ odstrani polinomski 
+    trend stopnje $d$, operator $\nabla_m^D$ pa $D$-kratno sezonsko nestacionarnost.
+    
+    Posebni primeri:
+    \begin{itemize}
+        \item $\mathrm{SARIMA}(p,d,q)(0,0,0)_m = \mathrm{ARIMA}(p,d,q)$,
+        \item $\mathrm{SARIMA}(p,d,q)(0,0,0)_m$ z $d = 0$ je $\mathrm{ARMA}(p,q)$,
+        \item $\mathrm{SARIMA}(0,0,0)(0,0,0)_m$ je $\WN(0,\sigma^2)$.
+    \end{itemize}
+\end{opomba}
+
+\begin{primer}
+    Oglejmo si proces $\mathrm{SARIMA}(0,1,1)(0,1,1)_{12}$. Ta model je v 
+    članku~\cite{dimri2020} izbran kot najboljši za \emph{mesečne padavine} na obeh 
+    postajah (Tehri in Uttarkashi).
+
+    \emph{Branje parametrov.} Trojki $(p,d,q) = (0,1,1)$ in $(P,D,Q) = (0,1,1)$ pri $m = 12$ 
+    pomenita:
+    \begin{itemize}
+        \item Nesezonski del: $p = 0$ (brez AR členov na zaporednih mesecih), $d = 1$ 
+              (enkratno diferenciranje), $q = 1$ (en MA člen na zaporednih mesecih).
+        \item Sezonski del: $P = 0$ (brez AR členov na letnih zamikih), $D = 1$ (enkratno 
+              sezonsko diferenciranje), $Q = 1$ (en MA člen na letnih zamikih).
+        \item Sezonska perioda $m = 12$ ustreza mesečnim podatkom z letno periodičnostjo.
+    \end{itemize}
+
+    \emph{Polinomi.} Ker je $p = P = 0$, sta avtoregresijska polinoma trivialna:
+    \[
+        \varphi(z) = 1, \qquad \Phi(z) = 1.
+    \]
+    Drsečesredinska polinoma sta
+    \[
+        \theta(z) = 1 + \theta_1 z, \qquad \Theta(z) = 1 + \Theta_1 z.
+    \]
+
+    \emph{Rekurzija.} Vstavitev v splošno SARIMA enačbo da
+    \[
+        \nabla \, \nabla_{12} X_t = (1 + \theta_1 B)(1 + \Theta_1 B^{12}) Z_t.
+    \]
+
+    \emph{Leva stran.} Najprej $\nabla_{12}$ odstrani letni cikel:
+    \[
+        \nabla_{12} X_t = X_t - X_{t-12}.
+    \]
+    Nato $\nabla$ odstrani še linearni trend:
+    \[
+        \nabla \, \nabla_{12} X_t = (X_t - X_{t-12}) - (X_{t-1} - X_{t-13})
+                                 = X_t - X_{t-1} - X_{t-12} + X_{t-13}.
+    \]
+
+    \emph{Desna stran.} Polinoma pomnožimo:
+    \[
+        (1 + \theta_1 B)(1 + \Theta_1 B^{12}) Z_t 
+        = Z_t + \theta_1 Z_{t-1} + \Theta_1 Z_{t-12} + \theta_1 \Theta_1 Z_{t-13}.
+    \]
+
+    \emph{Skupaj.} Model SARIMA torej pravi:
+    \[
+        X_t - X_{t-1} - X_{t-12} + X_{t-13} 
+        = Z_t + \theta_1 Z_{t-1} + \Theta_1 Z_{t-12} + \theta_1 \Theta_1 Z_{t-13}.
+    \]
+    
+    \emph{Interpretacija.} Spremembo med tem mesecem in istim mesecem prejšnjega leta, 
+    popravljeno za spremembo med prejšnjim mesecem in istim mesecem leto in en mesec nazaj, 
+    razložimo kot kombinacijo:
+    \begin{itemize}
+        \item današnjega belega šuma $Z_t$,
+        \item kratkoročne korelacije s prejšnjim mesecem ($\theta_1 Z_{t-1}$),
+        \item sezonske korelacije z istim mesecem prejšnjega leta ($\Theta_1 Z_{t-12}$),
+        \item interakcijskega člena ($\theta_1 \Theta_1 Z_{t-13}$), ki ustreza šumu izpred 
+              13 mesecev, torej enega meseca pred istim mesecem prejšnjega leta.
+    \end{itemize}
+    Interakcijski člen $\theta_1 \Theta_1 B^{13}$ izhaja iz multiplikativne 
+    strukture polinomov. Ker velja $B \cdot B^{12} = B^{13}$, se kratkoročni in sezonski mehanizem 
+    pri pomnoženih polinomih združita v skupni efekt na zamiku $1 + 12 = 13$. 
+    
+    Klimatsko interpretacijo dobimo z verižnim sklepanjem. Recimo, da modeliramo padavine 
+    julija 2024. Tedaj $Z_{t-13}$ ustreza belemu šumu junija 2023. Če je bil junij 2023 nenavadno 
+    suh, kratkoročni efekt nakazuje, da bo tudi julij 2023 nekoliko bolj suh kot običajno (ker 
+    se vremenske razmere obnašajo vztrajno iz meseca v mesec), sezonski efekt pa pove, da 
+    posledično tudi julija 2024 pričakujemo nekoliko nižje padavine. Vpliv junija 2023 na 
+    julij 2024 je torej posredna posledica dveh sosledičnih kratkih vplivov in je zajet 
+    natanko z interakcijskim členom.
+\end{primer}
+
+\begin{primer}
+    Oglejmo si še proces $\mathrm{SARIMA}(0,1,0)(0,1,1)_{12}$. Ta model je v 
+    članku~\cite{dimri2020} izbran kot najboljši za \emph{najnižjo in najvišjo mesečno 
+    temperaturo} na obeh postajah (Tehri in Uttarkashi).
+
+    \emph{Branje parametrov.} Trojki $(p,d,q) = (0,1,0)$ in $(P,D,Q) = (0,1,1)$ pri $m = 12$ 
+    pomenita:
+    \begin{itemize}
+        \item Nesezonski del: $p = 0$, $d = 1$ (enkratno diferenciranje za odstranitev trenda), 
+              $q = 0$ (brez MA členov na zaporednih mesecih).
+        \item Sezonski del: $P = 0$, $D = 1$ (enkratno sezonsko diferenciranje), 
+              $Q = 1$ (en MA člen na letnem zamiku).
+    \end{itemize}
+    Razlika z modelom za padavine je le v $q$: pri temperaturi $q = 0$, pri padavinah $q = 1$.
+
+    \emph{Polinomi.} Avtoregresijska polinoma sta trivialna ($\varphi(z) = \Phi(z) = 1$). 
+    Nesezonski drsečesredinski polinom je tudi trivialen ($\theta(z) = 1$, ker je $q = 0$). 
+    Ostane le sezonski drsečesredinski polinom $\Theta(z) = 1 + \Theta_1 z$.
+
+    \emph{Rekurzija.} Vstavitev v splošno SARIMA enačbo da
+    \[
+        \nabla \, \nabla_{12} X_t = (1 + \Theta_1 B^{12}) Z_t.
+    \]
+
+    \emph{Leva stran.} Tako kot pri padavinah:
+    \[
+        \nabla \, \nabla_{12} X_t = X_t - X_{t-1} - X_{t-12} + X_{t-13}.
+    \]
+
+    \emph{Desna stran.} Razvijemo:
+    \[
+        (1 + \Theta_1 B^{12}) Z_t = Z_t + \Theta_1 Z_{t-12}.
+    \]
+
+    \emph{Skupaj.}
+    \[
+        X_t - X_{t-1} - X_{t-12} + X_{t-13} = Z_t + \Theta_1 Z_{t-12}.
+    \]
+
+    \emph{Interpretacija.} V primerjavi z modelom za padavine ima ta model en parameter manj. 
+    Manjka kratkoročni MA člen $\theta_1 Z_{t-1}$ in posledično tudi interakcijski 
+    člen $\theta_1 \Theta_1 Z_{t-13}$. Ostane le sezonska korelacija med isto sezono prejšnjega 
+    leta ($\Theta_1 Z_{t-12}$).
+    
+    Klimatska razlaga te razlike je smiselna: temperatura ima zelo močan in stabilen letni 
+    cikel (julij je vsako leto vroč, januar vsako leto hladen) z relativno majhno 
+    nesezonsko šumno komponento. Zato sezonska korelacija $Z_{t-12}$ zadostuje, dodatna 
+    kratkoročna korelacija $Z_{t-1}$ pa ni potrebna. Padavine pa so bolj kaotične: poleg 
+    sezonskega cikla obstaja tudi pomembna kratkoročna dinamika (deževno obdobje se lahko 
+    razteza preko več sosednjih mesecev), zato model za padavine potrebuje tudi 
+    člen $\theta_1 Z_{t-1}$.
+\end{primer}
+
+\begin{izrek}
+    Naj bo $\{X_t\}$ proces $\mathrm{SARIMA}(p,d,q)(P,D,Q)_m$. Tedaj diferencirana vrsta 
+    \[
+        Y_t = \nabla^d \nabla_m^D X_t
+    \]
+    zadošča rekurziji $\varphi(B)\,\Phi(B^m)\,Y_t = \theta(B)\,\Theta(B^m)\,Z_t$, ki je 
+    rekurzija $\mathrm{ARMA}$ z razširjenim avtoregresijskim polinomom $\varphi(z)\Phi(z^m)$ 
+    in razširjenim drsečesredinskim polinomom $\theta(z)\Theta(z^m)$.
+    
+    Posledično je $\{Y_t\}$ kavzalen šibko stacionaren proces natanko tedaj, ko za vsak
+    $z \in \mathbb{C}, \abs{z} \leq 1$ velja 
+    \[
+        \varphi(z)\Phi(z^m) \neq 0.
+    \]
+\end{izrek}
+
+\begin{opomba}
+    Izrek pove, da SARIMA ni bistveno novega. Po ustreznem diferenciranju ($\nabla^d$ in 
+    $\nabla_m^D$) postane ARMA proces, le da imata avtoregresijski in drsečesredinski 
+    polinom posebno strukturo (sta produkta dveh polinomov). Pogoj kavzalnosti se reducira na 
+    znan pogoj iz $\mathrm{ARMA}$, le na obeh polinomih hkrati.
+\end{opomba}
+
 \newpage
 
 \appendix
@@ -424,6 +760,9 @@ Ponovimo osnovne pojme in rezultate iz~\cite{basrak}, ki so potrebni za razumeva
 \begin{thebibliography}{9}
     \bibitem{basrak} B.~Basrak, \emph{Essentials of Time Series with examples in R},
     Department of Mathematics, University of Zagreb.
+    \bibitem{dimri2020} T.~Dimri, S.~Ahmad, M.~Sharif,
+    \emph{Time series analysis of climate variables using seasonal ARIMA approach},
+    Journal of Earth System Science 129 (2020), 149.
 \end{thebibliography}
 
 \end{document}
